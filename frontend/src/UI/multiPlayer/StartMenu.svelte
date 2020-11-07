@@ -1,13 +1,15 @@
 <script>
     // import {createEventDispatcher} from "svelte";
+    import SocketClient from '../../classes/SocketClient';
 
     // const dispatch = createEventDispatcher();
 
     let playerName = "";
 
     class Game {
-        static addNewPlayer() {
+        static connectPlayer() {
             if (playerName !== "") {
+                SocketClient.connect('localhost:8080', playerName)
                 playerName = "";
             }
         }
@@ -83,7 +85,7 @@
         <label for="player_name">
             <input type="text" id="player_name" bind:value={playerName}/>
         </label>
-        <button on:click={Game.addNewPlayer}>Добавить игрока</button>
+        <button on:click={Game.connectPlayer}>Подключиться</button>
     </div>
     <div class="list_players">
         <!--{#if $players.length !== 0}-->

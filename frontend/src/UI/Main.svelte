@@ -4,12 +4,12 @@
     import MultiPlayerMenu from "./multiPlayer/StartMenu.svelte";
     import MultiPlayerGame from "./multiPlayer/MultiPlayerGame.svelte";
 
-    let startMenu = true;
+    let startMenu = false; // true
 
     let isShowSinglePlayerMenu = false;
     let isStartSinglePlayer = false;
 
-    let isShowMultiPlayerMenu = false;
+    let isShowMultiPlayerMenu = true; // false
     let isStartMultiPlayer = false;
 
     class SinglePlayer {
