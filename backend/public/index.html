@@ -1,15 +1,63 @@
-<html lang="ru">
+<html>
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>101</title>
+  <title>Express</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <script src="/api/socket.io.js"></script>
+  <script>
+    const socket = io({ path: "/api" });
+
+    socket.on("login", data => {
+      if (data) {
+        socket.send("Hi all!");
+      }
+      else {
+        console.log("Bad login");
+      }
+    });
+
+    socket.on("message", message => {
+      console.log(message);
+    });
+
+    function login(name) {
+      socket.emit("login", name);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const textArea = document.querySelector("#message");
+      const sendButton = document.querySelector("#send");
+      const cardsBoard = document.querySelector("#cards");
+
+      sendButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (textArea.value && textArea.value.trim()) {
+          socket.send(textArea.value);
+          textArea.value = "";
+        }
+      });
+
+      cardsBoard.addEventListener("click", event => {
+        event.preventDefault();
+        if (event.target.type === "submit") {
+          socket.emit("turn", event.target.value);
+        }
+      })
+    })
+
+  </script>
 </head>
+
 <body>
-<input type="text" id="user_name"/>
-<button id="user_connect">Подключиться</button>
-<input type="text" id="message_text"/>
-<button id="send">Отправить</button>
+  <h1>Express</h1>
+  <p>Welcome to Express</p>
+  <input type="text" id="message">
+  <button type="submit" id="send">Send</button>
+  <div id="cards">
+    <button value="1">1</button>
+    <button value="2">2</button>
+    <button value="3">3</button>
+  </div>
 </body>
-<script src="javascripts/game_logic.js"></script>
-<script src="javascripts/send.js"></script>
+
 </html>
