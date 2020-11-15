@@ -1,16 +1,16 @@
 <script>
-    // import {createEventDispatcher} from "svelte";
+    import {createEventDispatcher} from "svelte";
     import SocketClient from '../../classes/SocketClient';
 
-    // const dispatch = createEventDispatcher();
+    const dispatch = createEventDispatcher();
 
     let playerName = "";
 
     class Game {
         static connectPlayer() {
-            if (playerName !== "") {
-                SocketClient.connect('localhost:8080', playerName)
-                playerName = "";
+            if (playerName.trim() !== "") {
+                SocketClient.login(playerName.trim());
+                dispatch("loginInLobby");
             }
         }
 
@@ -87,15 +87,4 @@
         </label>
         <button on:click={Game.connectPlayer}>Подключиться</button>
     </div>
-    <div class="list_players">
-        <!--{#if $players.length !== 0}-->
-        <!--    <h2>Добавленные игроки</h2>-->
-        <!--{/if}-->
-        <!--{#each $players as player, index (player)}-->
-        <!--    <p>{player.name}</p>-->
-        <!--{/each}-->
-    </div>
-<!--    <div class="start_new_game">-->
-<!--        <button on:click={Game.startNewGame}>Новая игра</button>-->
-<!--    </div>-->
 </div>

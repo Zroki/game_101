@@ -4,13 +4,16 @@
     import MultiPlayerMenu from "./multiPlayer/StartMenu.svelte";
     import MultiPlayerGame from "./multiPlayer/MultiPlayerGame.svelte";
 
-    let startMenu = false; // true
+    import Lobby from './multiPlayer/lobby.svelte'
+
+    let startMenu = true; // true
 
     let isShowSinglePlayerMenu = false;
     let isStartSinglePlayer = false;
 
-    let isShowMultiPlayerMenu = true; // false
+    let isShowMultiPlayerMenu = false; // false
     let isStartMultiPlayer = false;
+    let isStartLobby = false;
 
     class SinglePlayer {
         static showSinglePlayerMenu() {
@@ -35,6 +38,11 @@
             isStartMultiPlayer = true;
             isShowMultiPlayerMenu = false;
             startMenu = false;
+        }
+
+        static startLobby() {
+            isStartLobby = true;
+            isShowMultiPlayerMenu = false;
         }
     }
 </script>
@@ -93,9 +101,15 @@
 {/if}
 
 <!-- Сетевой режим игры -->
+<!--{#if isShowMultiPlayerMenu}-->
+<!--    <MultiPlayerMenu on:start={MultiPlayer.startMultiPlayer}/>-->
+<!--{/if}-->
 {#if isShowMultiPlayerMenu}
-    <MultiPlayerMenu on:start={MultiPlayer.startMultiPlayer}/>
+    <MultiPlayerMenu on:loginInLobby={MultiPlayer.startLobby}/>
 {/if}
-{#if isStartMultiPlayer}
-    <MultiPlayerGame/>
+{#if isStartLobby}
+    <Lobby></Lobby>
 {/if}
+<!--{#if isStartMultiPlayer}-->
+<!--    <MultiPlayerGame/>-->
+<!--{/if}-->

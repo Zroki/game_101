@@ -1,54 +1,62 @@
-export default class SocketClient {
-    static socket = null;
-    static userName = null;
-    static id = null;
+import io from 'socket.io';
+import {players, lastTurn, turns} from "../store";
+import { get } from 'svelte/store';
 
-    static generateId() {
-        return (Math.random() * 1000000).toFixed(0);
+class SocketClient {
+    socket = null;
+
+    constructor() {
+        // Создаём активное подключение к сокету на сервере
+        this.socket = io({path: "/api"});
+
+        // Обрабатываем событие login
+        this.socket.on("login", (data) => {
+            this.onlogin(data);
+        });
+
+        this.socket.on('turn', (turn) => {
+            turns.set([...get(turns), turn]);
+            lastTurn.set(turn);
+        });
+        this.socket.on("updateLobby", this.updateLobby);
+        this.socket.on("message", this.incommingMessage);
     }
 
-    static connect(url, userName) {
-        SocketClient.socket = new WebSocket(`ws://${url}`);
-        SocketClient.userName = userName;
-        SocketClient.id = SocketClient.generateId();
-
-        SocketClient.socket.onopen = () => {
-            SocketClient.send({
-                id: SocketClient.id,
-                name: SocketClient.userName,
-                event: 'connect'
-            });
-        };
-
-        SocketClient.socket.onmessage = (event) => {
-            SocketClient.drawMessage(event.data);
-        };
-
-        SocketClient.socket.onclose = (event) => {
-            if (event.wasClean) {
-                SocketClient.send({
-                    id: SocketClient.id,
-                    name: SocketClient.userName,
-                    event: 'leave'
-                });
-            } else {
-                SocketClient.drawMessage('Соединение разорвано сервером');
-            }
-        };
-
-        SocketClient.socket.onerror = (error) => {
-            if (SocketClient.readyState === 3) {
-                SocketClient.drawMessage('Ошибка соединения с сервером');
-            }
-            console.error(error);
-        };
+    updateLobby(users) {
+        // Обновляем в реальном времени состояние подключенных пользователей
+        players.set(users);
     }
 
-    static send(data) {
-        SocketClient.socket.send(JSON.stringify(data));
+    login(name) {
+        this.socket.emit("login", name);
     }
 
-    static drawMessage(message) {
-        // TODO Сделать отрисовывание сообщения от сервера
+    // Первое подключение
+    onlogin(data) {
+        if (data) {
+            this.socket.send("Hi all!");
+        } else {
+            console.log("Bad login");
+        }
+    }
+
+    incommingMessage(message) {
+        console.log(message);
+    }
+
+    sendMessage(text) {
+        this.socket.send(text);
+    }
+
+    startGame() {
+        this.socket.emit('start');
+    }
+
+    turn(card) {
+        this.socket.emit('turn', card);
     }
 }
+
+const socketClient = new SocketClient();
+
+export default socketClient;
