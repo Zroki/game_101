@@ -3,6 +3,9 @@ const io = require("socket.io")({ path: "/api" });
 const rooms = io.of("/").adapter.rooms;
 rooms.set("gameRoom", new Set());
 
+let users = [];
+let userTurn = 0;
+
 io.on("connection", async client => {
 
   // Для сообщений только этому сокету
@@ -21,6 +24,8 @@ io.on("connection", async client => {
     client.join("gameRoom");
     console.log(`${client.name} logged in.`);
     pm.emit("login", true);
+    users.push({ id: client.id, name: client.name});
+    io.to("gameRoom").emit("updateLobby", users);
   });
 
   client.on("message", message => {
@@ -30,10 +35,32 @@ io.on("connection", async client => {
   });
 
   client.on("turn", data => {
-    checkRoom((data) => {
-      io.to("gameRoom").send(`${client.name}: Make turn! He draw ${data}!`);
-    }, data);
+    io.to("gameRoom").emit("turn", {
+      id: users[userTurn].id,
+      card: data,
+      username: client.name
+    });
+    userTurn += 1;
+    if (userTurn === users.length) {
+      userTurn = 0;
+    }
   });
+
+  client.on("start", () => {
+    io.to("gameRoom").emit("turn", {
+      firstTurn: true,
+      id: users[userTurn].id
+    });
+    userTurn += 1;
+    if (userTurn === users.length) {
+      userTurn = 0;
+    }
+  })
+
+  client.on("disconnect", () => {
+    users = users.filter( user => user.id !== client.id);
+    io.to("gameRoom").emit("updateLobby", users);
+  })
 
   function checkRoom(cb, arg) {
     if (rooms.get("gameRoom").has(client.id)) {
